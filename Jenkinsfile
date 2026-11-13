@@ -78,7 +78,24 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
+                // Espera o SonarQube terminar de processar a análise e só então consulta o gate.
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    sh '''
+                        url=$(grep '^ceTaskUrl=' .scannerwork/report-task.txt | cut -d= -f2-)
+                        for i in $(seq 1 60); do
+                          status=$(curl -fsS -u "$SONAR_TOKEN:" "$url" | jq -r .task.status)
+                          echo "Processamento da análise no SonarQube: $status"
+                          case "$status" in
+                            SUCCESS) exit 0 ;;
+                            FAILED|CANCELED) exit 1 ;;
+                          esac
+                          sleep 5
+                        done
+                        echo "O SonarQube não terminou de processar a análise a tempo" >&2
+                        exit 1
+                    '''
+                }
+                timeout(time: 2, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
