@@ -1,0 +1,39 @@
+# Ambiente da aplicação (usado pelo estágio de deploy do Jenkins).
+# Para subir na mão:  IMAGE_REF=androww/zeladoria-sp:latest docker compose -p zeladoria up -d --wait
+
+name: zeladoria
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: zeladoria
+      POSTGRES_USER: zeladoria
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD:-zeladoria-local}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zeladoria -d zeladoria"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    image: ${IMAGE_REF:-androww/zeladoria-sp:latest}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://zeladoria:${APP_DB_PASSWORD:-zeladoria-local}@db:5432/zeladoria
+    ports:
+      - "8000:8000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  db-data:

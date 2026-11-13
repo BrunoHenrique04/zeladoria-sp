@@ -1,0 +1,15 @@
+.git
+.venv
+__pycache__
+*.pyc
+tests
+docs
+infra
+scripts
+reports
+.scannerwork
+.pytest_cache
+.ruff_cache
+*.db
+*.md
+Jenkinsfile
