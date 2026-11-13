@@ -70,7 +70,7 @@ pipeline {
                           -e SONAR_HOST_URL -e SONAR_TOKEN="$SONAR_AUTH_TOKEN" \
                           -v "$WORKSPACE:$WORKSPACE" -w "$WORKSPACE" \
                           "$SCANNER_IMAGE" \
-                          -Dsonar.projectVersion="$TAG"
+                          -Dsonar.projectVersion="$TAG" -Dsonar.working.directory=$WORKSPACE/.scannerwork
                     '''
                 }
             }
