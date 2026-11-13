@@ -86,7 +86,7 @@ SUBPREFEITURAS: frozenset[str] = frozenset(
 )
 
 BONUS_EQUIPAMENTO_SENSIVEL = 2
-APOIOS_POR_PONTO = 5
+APOIOS_POR_PONTO = 3
 BONUS_MAXIMO_APOIOS = 3
 
 TRANSICOES: dict[Status, frozenset[Status]] = {
