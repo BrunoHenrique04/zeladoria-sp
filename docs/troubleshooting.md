@@ -51,12 +51,13 @@ Para mostrar o bloqueio de segurança, basta trocar uma dependência por uma ver
 
 O relatório HTML do Trivy de cada build fica em Artefatos, no Jenkins, então dá para comparar o antes e o depois.
 
-## Problemas reais que podem aparecer
+## Problemas conhecidos
 
 | Sintoma | Causa provável | O que fazer |
 |---------|----------------|-------------|
 | SonarQube reinicia em loop | `vm.max_map_count` baixo | `sudo sysctl -w vm.max_map_count=524288` (o setup já grava isso) |
 | `permission denied` no docker.sock dentro do Jenkins | GID do grupo docker diferente | Conferir `DOCKER_GID` no `infra/.env` com `getent group docker` |
-| Quality Gate fica esperando até dar timeout | Webhook do Sonar para o Jenkins não existe | Sonar > Administration > Configuration > Webhooks, URL `http://jenkins:8080/sonarqube-webhook/` |
+| Quality Gate falha com `Unable to guess SonarQube task id` | O scanner roda em container e grava o `report-task.txt` fora do workspace | Passar `-Dsonar.working.directory=$WORKSPACE/.scannerwork` para o scanner (já está no Jenkinsfile) |
+| Quality Gate fica esperando até dar timeout | O SonarQube recusa entregar o webhook para um endereço interno (`http://jenkins:8080`) | A pipeline consulta o status da análise pela API antes do `waitForQualityGate`, então não depende do webhook |
 | Push no GitHub não dispara o build | Webhook do GitHub ausente ou porta 8080 fechada | Ver Recent Deliveries no webhook e a regra de entrada da VM |
 | Deploy falha com container `unhealthy` | API não conectou no banco | `docker compose -p zeladoria logs api` |
